@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Point Book</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#ffffff; --ink:#22232b; --sub:#6b7280;
+    --brand:#5b6bf5; --brand-dark:#4351d8; --accent:#ff9f43;
+    --danger:#e5484d; --ok:#2fb380; --line:#e7e8ee;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);}
+  header{position:sticky;top:0;z-index:20;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:10px;}
+  header .logo{font-weight:800;font-size:18px;letter-spacing:-0.5px;}
+  header .logo span{color:var(--brand);}
+  header .spacer{flex:1;}
+  .pill{display:flex;align-items:center;gap:6px;background:#eef0ff;color:var(--brand-dark);padding:6px 12px;border-radius:999px;font-weight:700;font-size:14px;white-space:nowrap;}
+  .pill.stock{background:#fff1e2;color:#b1580a;}
+  .btn{border:none;border-radius:10px;padding:9px 14px;font-size:14px;font-weight:700;cursor:pointer;background:var(--brand);color:#fff;transition:transform .05s;}
+  .btn:active{transform:scale(0.97);}
+  .btn.secondary{background:#eef0f4;color:var(--ink);}
+  .btn.ghost{background:transparent;color:var(--brand-dark);}
+  .btn.danger{background:#fdeceb;color:var(--danger);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  main{max-width:1080px;margin:0 auto;padding:16px;padding-bottom:90px;}
+  .tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0 14px;}
+  .tab{padding:9px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-weight:700;font-size:14px;color:var(--sub);cursor:pointer;white-space:nowrap;}
+  .tab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .card{background:var(--card);border-radius:var(--radius);border:1px solid var(--line);padding:16px;margin-bottom:14px;}
+  h2{font-size:16px;margin:0 0 12px;}
+  h3{font-size:14px;margin:0 0 8px;color:var(--sub);font-weight:700;}
+  .grid{display:grid;gap:12px;}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+  @media (max-width:720px){.grid.cols-3{grid-template-columns:repeat(2,1fr);}.grid.cols-4{grid-template-columns:repeat(2,1fr);}}
+  .item-card{border:2px solid var(--line);border-radius:14px;padding:10px;text-align:center;background:#fafbff;position:relative;}
+  .item-card.owned{border-color:#c9d0ff;}
+  .item-card.equipped{border-color:var(--brand);background:#eef0ff;}
+  .item-card svg{width:100%;height:80px;}
+  .item-card .name{font-size:13px;font-weight:700;margin-top:4px;}
+  .item-card .price{font-size:12px;color:var(--sub);margin-bottom:6px;}
+  .item-card .badge{position:absolute;top:6px;right:6px;font-size:10px;background:var(--brand);color:#fff;padding:2px 6px;border-radius:6px;font-weight:700;}
+  .product-card{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fafbff;display:flex;flex-direction:column;gap:8px;}
+  .product-card .icon{font-size:36px;text-align:center;}
+  .product-card .name{font-weight:800;font-size:14px;}
+  .product-card .meta{font-size:12px;color:var(--sub);display:flex;justify-content:space-between;}
+  .avatar-wrap{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;}
+  .avatar-frame{width:220px;height:220px;border-radius:18px;overflow:hidden;border:1px solid var(--line);flex-shrink:0;}
+  .avatar-frame svg{width:100%;height:100%;display:block;}
+  .cat-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+  .cat-btn{padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:700;color:var(--sub);cursor:pointer;}
+  .cat-btn.active{background:var(--brand);color:#fff;border-color:var(--brand);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);}
+  th{color:var(--sub);font-weight:700;font-size:12px;}
+  .row-actions{display:flex;gap:6px;}
+  .empty{color:var(--sub);font-size:13px;padding:20px 0;text-align:center;}
+  .student-pick{display:flex;flex-wrap:wrap;gap:10px;}
+  .student-chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;}
+  .student-chip:hover{border-color:var(--brand);}
+  .role-screen{max-width:420px;margin:60px auto;text-align:center;}
+  .role-screen h1{font-size:22px;margin-bottom:4px;}
+  .role-screen p{color:var(--sub);font-size:14px;margin-bottom:24px;}
+  .role-btns{display:flex;flex-direction:column;gap:10px;}
+  .modal-bg{position:fixed;inset:0;background:rgba(20,20,30,.4);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px;}
+  .modal{background:#fff;border-radius:16px;padding:20px;max-width:380px;width:100%;}
+  .modal h3{margin-top:0;}
+  .field{margin-bottom:10px;}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--sub);margin-bottom:4px;}
+  .field input,.field select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--line);font-size:14px;}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:700;z-index:60;box-shadow:0 8px 24px rgba(0,0,0,.2);}
+  .status-tag{font-size:11px;font-weight:800;padding:2px 8px;border-radius:6px;}
+  .status-pending{background:#fff4d6;color:#96760a;}
+  .status-collected{background:#dcf7e9;color:#177a4c;}
+  .status-cancelled{background:#fdeceb;color:var(--danger);}
+  .flex-between{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+
+  .mypage-grid{display:grid;grid-template-columns:200px 1fr 220px;gap:14px;align-items:start;}
+  @media (max-width:900px){.mypage-grid{grid-template-columns:1fr;}}
+  .mp-col{display:flex;flex-direction:column;gap:14px;}
+  .mp-avatar-box{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;text-align:center;}
+  .mp-avatar-placeholder{width:88px;height:88px;border-radius:50%;background:#eef0f4;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 10px;}
+  .mp-name{font-weight:800;font-size:15px;}
+  .mp-level{font-size:12px;color:var(--sub);font-weight:700;margin-top:2px;}
+  .mp-feature-list{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:6px;}
+  .mp-feature-item{display:flex;align-items:center;gap:8px;padding:10px 8px;border-radius:10px;font-size:13px;font-weight:700;color:var(--sub);}
+  .mp-feature-item.disabled{background:#fafbff;opacity:0.6;cursor:not-allowed;}
+  .mp-feature-item:not(.disabled){background:#fafbff;cursor:pointer;}
+  .mp-feature-item:not(.disabled):hover{background:#eef0ff;color:var(--brand-dark);}
+  .star-icon{display:inline-block;background:var(--c,#f5c518);clip-path:polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);flex-shrink:0;}
+  .pending-tray-wrap{background:#fff7e0;border:1px dashed #f0c94a;border-radius:14px;padding:12px;margin:4px 0 14px;}
+  .pending-tray-label{font-size:12px;font-weight:700;color:#8a6d1a;margin-bottom:8px;}
+  .pending-tray{display:flex;gap:10px;flex-wrap:wrap;}
+  .pending-chip{position:relative;width:50px;height:50px;border-radius:14px;background:#fff;border:1px solid #f0c94a;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:chipInvite 1.4s ease-in-out infinite;}
+  .pending-chip:hover{transform:translateY(-2px);}
+  .pending-chip.popping{animation:chipPop .8s ease-in forwards;pointer-events:none;}
+  @keyframes chipInvite{0%,100%{box-shadow:0 0 0 0 rgba(245,197,24,0.5);}50%{box-shadow:0 0 0 6px rgba(245,197,24,0);}}
+  @keyframes chipPop{0%{transform:scale(1);opacity:1;}35%{transform:scale(1.3);opacity:1;}75%{transform:scale(1.05);opacity:1;}100%{transform:scale(0.2);opacity:0;}}
+  .spark{position:absolute;top:50%;left:50%;font-size:15px;opacity:0;line-height:1;}
+  .popping .spark{animation:sparkOut .8s ease-out forwards;}
+  @keyframes sparkOut{0%{transform:translate(-50%,-50%) translate(0,0) scale(0.4) rotate(0deg);opacity:1;}55%{opacity:1;}100%{transform:translate(-50%,-50%) translate(var(--tx),var(--ty)) scale(1.15) rotate(180deg);opacity:0;}}
+  .spark.b1{--tx:-30px;--ty:-26px;} .spark.b2{--tx:28px;--ty:-28px;} .spark.b3{--tx:-34px;--ty:10px;}
+  .spark.b4{--tx:32px;--ty:14px;} .spark.b5{--tx:0px;--ty:-38px;} .spark.b6{--tx:0px;--ty:32px;}
+  @keyframes slotPopIn{0%{transform:scale(0);}60%{transform:scale(1.3);}100%{transform:scale(1);}}
+  .sticker-slot.slot-pop-in{animation:slotPopIn .5s cubic-bezier(.34,1.56,.64,1);}
+  .cat-row-list{display:flex;flex-direction:column;gap:6px;}
+  .cat-row-mini{display:flex;align-items:center;gap:8px;background:#fafbff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;}
+  .cat-row-mini-label{flex:1;font-size:12px;font-weight:700;color:var(--ink);}
+  .cat-row-mini-count{font-size:12px;font-weight:800;color:var(--brand-dark);}
+  .sticker-board{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;background:#fff3c4;border-radius:14px;padding:14px;margin:12px 0 8px;}
+  .sticker-slot{aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,0.55);display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .sticker-slot.filled{background:#fff;box-shadow:0 2px 5px rgba(150,110,10,0.28);}
+  .sticker-slot.filled svg.sticker-badge{width:92%;height:92%;}
+  .pending-chip svg.sticker-badge{width:86%;height:86%;}
+  .board-nav{display:flex;align-items:center;justify-content:center;gap:14px;}
+  .market-list-header{display:grid;grid-template-columns:56px 1fr 100px 88px;gap:10px;padding:0 10px 8px;font-size:12px;font-weight:700;color:var(--sub);}
+  .market-product-list{display:flex;flex-direction:column;gap:8px;}
+  .market-product-row{display:grid;grid-template-columns:56px 1fr 100px 88px;align-items:center;gap:10px;background:#fafbff;border:1px solid var(--line);border-radius:12px;padding:10px;}
+  .mp-product-icon{width:44px;height:44px;border-radius:12px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:24px;}
+  .mp-product-name{font-weight:800;font-size:14px;}
+  .mp-product-stock{font-size:11px;color:var(--sub);margin-top:2px;}
+  .mp-product-price{font-size:14px;font-weight:800;color:var(--brand-dark);white-space:nowrap;}
+  .market-product-row .btn{padding:8px 0;font-size:12px;}
+  .mp-stat-box{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;}
+  .mp-stat-box h3{margin:0 0 6px;font-size:12px;color:var(--sub);font-weight:700;}
+  .mp-stat-num{font-size:20px;font-weight:800;}
+  .mp-chart-placeholder{height:90px;border-radius:10px;background:#f4f5f9;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:12px;font-weight:700;}
+  .mp-stat-box.empty-box{min-height:44px;background:#fafbff;}
+
+  /* 선생님 대문 (Students Point Book) */
+  .teacher-home{text-align:center;padding:40px 0;}
+  .teacher-home-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;max-width:560px;margin:0 auto;}
+  @media (max-width:560px){.teacher-home-grid{grid-template-columns:1fr;}}
+  .teacher-home-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px 16px;cursor:pointer;transition:transform .08s,box-shadow .08s;}
+  .teacher-home-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(30,30,60,0.08);border-color:#c9d0ff;}
+  .teacher-home-card:active{transform:scale(0.98);}
+  .thc-icon{font-size:38px;margin-bottom:10px;}
+  .thc-title{font-size:18px;font-weight:800;margin-bottom:4px;}
+  .thc-desc{font-size:12px;color:var(--sub);}
+
+  /* SPB (반+학생 통합) */
+  .spb-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+  .spb-controls select, .spb-controls input{padding:8px 10px;border-radius:8px;border:1px solid var(--line);font-size:13px;}
+  .spb-table{border-collapse:collapse;width:100%;min-width:920px;}
+  .spb-table th{font-size:11px;color:var(--sub);font-weight:700;padding:6px 8px;text-align:left;border-bottom:2px solid var(--line);white-space:nowrap;}
+  .spb-table td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:13px;}
+  .spb-table .row-actions{display:flex;align-items:center;gap:4px;}
+  .spb-num{width:48px;padding:6px;border-radius:6px;border:1px solid var(--line);}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   마켓데이 스티커샵 — 데이터 레이어
+   지금은 브라우저 localStorage에 저장하는 프로토타입입니다.
+   여러 기기(학생 태블릿/PC)에서 잔액을 같이 보려면
+   나중에 Supabase 같은 공유 DB로 옮기는 작업이 필요합니다.
+   ============================================================ */
+
+const STORAGE_KEY = "marketday_v1";
+
+function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
+function now(){ return Date.now(); }
+function won(n){ return n.toLocaleString("ko-KR"); }
+
+// ------------------------------------------------------------
+// 정이조 반 코드 체계 (담임 안내문 자동화 시스템과 동일 규칙)
+// 반 코드 형식: [요일그룹][타임슬롯]레벨이니셜레벨숫자-구분  예) T(F)I3-A
+// ------------------------------------------------------------
+const CAMPUS_LIST = [
+  "정이조주니어영어학원(목동)","정이조주니어(목2관)","정이조주니어(목3관)",
+  "정이조주니어(강서)","정이조주니어(동작)","정이조주니어(마포)",
+  "정이조주니어(가재울)","정이조주니어(김포운양)","정이조주니어(강동고덕)",
+];
+const LEVEL_DEFS = [
+  {key:"wind",   label:"Wind",   initial:"W"},
+  {key:"island", label:"Island", initial:"I"},
+  {key:"nation", label:"Nation", initial:"N"},
+  {key:"globe",  label:"Globe",  initial:"G"},
+];
+const DAY_GROUPS = [
+  {key:"M", label:"월수금"},
+  {key:"T", label:"화목"},
+];
+const TIME_SLOTS_BY_DAYGROUP = {
+  M: [
+    {key:"F", label:"Front (오후 2:30-4:05)"},
+    {key:"M", label:"Middle (오후 4:10-5:45)"},
+    {key:"T", label:"Twilight (오후 5:50-7:25)"},
+  ],
+  T: [
+    {key:"F", label:"Front (오후 3:10-5:15)"},
+    {key:"T", label:"Twilight (오후 5:20-7:44)"},
+  ],
+};
+const CLASS_GROUP_OPTIONS = ["A","B","C","D"];
+
+function levelDef(key){ return LEVEL_DEFS.find(l=>l.key===key) || LEVEL_DEFS[0]; }
+function timeSlotLabel(dayGroup, slotKey){
+  const list = TIME_SLOTS_BY_DAYGROUP[dayGroup] || [];
+  const found = list.find(s=>s.key===slotKey);
+  return found ? found.label : slotKey;
+}
+function buildClassCode(dayGroup, timeSlot, levelKey, levelNum, group){
+  return `${dayGroup}(${timeSlot})${levelDef(levelKey).initial}${levelNum}-${group}`;
+}
+function getClass(classId){ return DB.classes.find(c=>c.id===classId); }
+function classDisplayLabel(cls){
+  if(!cls) return "(반 미배정)";
+  return `${cls.code} · ${cls.name}`;
+}
+
+function seedData(){
+  const items = [
+    // background
+    {id:"bg_sky",category:"background",name:"맑은 하늘",price:0,svg:"bg_sky"},
+    {id:"bg_sunset",category:"background",name:"노을",price:15,svg:"bg_sunset"},
+    {id:"bg_night",category:"background",name:"밤하늘",price:20,svg:"bg_night"},
+    {id:"bg_forest",category:"background",name:"숲속",price:15,svg:"bg_forest"},
+    // hair
+    {id:"hair_short",category:"hair",name:"짧은 머리",price:0,svg:"hair_short"},
+    {id:"hair_long",category:"hair",name:"긴 머리",price:10,svg:"hair_long"},
+    {id:"hair_pony",category:"hair",name:"포니테일",price:12,svg:"hair_pony"},
+    {id:"hair_spiky",category:"hair",name:"스파이크",price:14,svg:"hair_spiky"},
+    // hat
+    {id:"hat_none",category:"hat",name:"안 씀",price:0,svg:"hat_none"},
+    {id:"hat_cap",category:"hat",name:"야구모자",price:12,svg:"hat_cap"},
+    {id:"hat_beanie",category:"hat",name:"비니",price:10,svg:"hat_beanie"},
+    {id:"hat_crown",category:"hat",name:"왕관",price:25,svg:"hat_crown"},
+    // top
+    {id:"top_basic",category:"top",name:"기본 티셔츠",price:0,svg:"top_basic"},
+    {id:"top_hoodie",category:"top",name:"후드티",price:15,svg:"top_hoodie"},
+    {id:"top_dress",category:"top",name:"원피스",price:18,svg:"top_dress"},
+    {id:"top_stripe",category:"top",name:"줄무늬 셔츠",price:12,svg:"top_stripe"},
+    // shoes
+    {id:"shoes_basic",category:"shoes",name:"기본 운동화",price:0,svg:"shoes_basic"},
+    {id:"shoes_red",category:"shoes",name:"빨간 스니커즈",price:10,svg:"shoes_red"},
+    {id:"shoes_boots",category:"shoes",name:"부츠",price:14,svg:"shoes_boots"},
+    {id:"shoes_sandal",category:"shoes",name:"샌들",price:8,svg:"shoes_sandal"},
+    // pet
+    {id:"pet_none",category:"pet",name:"안 키움",price:0,svg:"pet_none"},
+    {id:"pet_cat",category:"pet",name:"고양이",price:20,svg:"pet_cat"},
+    {id:"pet_dog",category:"pet",name:"강아지",price:20,svg:"pet_dog"},
+    {id:"pet_dragon",category:"pet",name:"아기 드래곤",price:30,svg:"pet_dragon"},
+  ];
+
+  const products = [
+    {id:uid("pd"),name:"젤펜 세트",price:15,stock:20,icon:"🖊️"},
+    {id:uid("pd"),name:"미니 노트",price:10,stock:25,icon:"📓"},
+    {id:uid("pd"),name:"캐릭터 스티커북",price:12,stock:15,icon:"📔"},
+    {id:uid("pd"),name:"말랑 젤리 지우개",price:8,stock:30,icon:"🧼"},
+    {id:uid("pd"),name:"미니 피규어", price:25,stock:10,icon:"🧸"},
+    {id:uid("pd"),name:"학용품 세트", price:35,stock:8,icon:"🎒"},
+    {id:uid("pd"),name:"(임시) 캐릭터 카드", price:6,stock:40,icon:"🃏"},
+    {id:uid("pd"),name:"(임시) 미니 퍼즐", price:18,stock:12,icon:"🧩"},
+  ];
+
+  function makePlacedLog(counts){
+    const log = []; let total = 0;
+    Object.entries(counts).forEach(([catId, n])=>{
+      for(let i=0;i<n;i++){ log.push({id:uid("sk"), categoryId:catId, ts:Date.now()-Math.floor(Math.random()*1e9), placed:true}); total++; }
+    });
+    return {log, total};
+  }
+  function addPending(log, catId, n){
+    for(let i=0;i<n;i++) log.push({id:uid("sk"), categoryId:catId, ts:Date.now()-Math.floor(Math.random()*1e5), placed:false});
+  }
+
+  const s1 = makePlacedLog({big_box:5, talk_tree:5, book_hw:8, quiz:9, review_perfect:7, participation:8}); // 42
+  addPending(s1.log, "big_box", 1); addPending(s1.log, "talk_tree", 1); addPending(s1.log, "participation", 1);
+
+  const s2 = makePlacedLog({big_box:15, talk_tree:15, book_hw:26, quiz:28, review_perfect:22, participation:24}); // 130
+  addPending(s2.log, "quiz", 1); addPending(s2.log, "book_hw", 1); addPending(s2.log, "review_perfect", 1);
+
+  const s3 = makePlacedLog({big_box:3, talk_tree:2, book_hw:4, quiz:4, review_perfect:3, participation:4}); // 20
+  addPending(s3.log, "big_box", 1);
+
+  const classes = [
+    {id:uid("cl"), code: buildClassCode("T","F","island",3,"A"), name:"Island3", campus: CAMPUS_LIST[0], dayGroup:"T", timeSlot:"F", level:"island", levelNum:3, group:"A"},
+    {id:uid("cl"), code: buildClassCode("M","M","nation",2,"B"), name:"Nation2", campus: CAMPUS_LIST[0], dayGroup:"M", timeSlot:"M", level:"nation", levelNum:2, group:"B"},
+  ];
+
+  const students = [
+    {id:uid("st"),name:"김민준",englishName:"Kim Minjun",classId:classes[0].id,stickers:42,totalEarned:s1.total,semesterEarned:42,stickerLog:s1.log,avatar:defaultAvatar(),inventory:["bg_sky","hair_short","hat_none","top_basic","shoes_basic","pet_none"]},
+    {id:uid("st"),name:"이서연",englishName:"Lee Seoyeon",classId:classes[0].id,stickers:58,totalEarned:s2.total,semesterEarned:58,stickerLog:s2.log,avatar:defaultAvatar(),inventory:["bg_sky","hair_short","hat_none","top_basic","shoes_basic","pet_none"]},
+    {id:uid("st"),name:"박도윤",englishName:"Park Doyun",classId:classes[1].id,stickers:20,totalEarned:s3.total,semesterEarned:20,stickerLog:s3.log,avatar:defaultAvatar(),inventory:["bg_sky","hair_short","hat_none","top_basic","shoes_basic","pet_none"]},
+  ];
+
+  return {items, products, students, classes, orders:[], ledger:[]};
+}
+
+function defaultAvatar(){
+  return {background:"bg_sky",hair:"hair_short",hat:"hat_none",top:"top_basic",shoes:"shoes_basic",pet:"pet_none"};
+}
+
+function loadDB(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try{
+      const parsed = JSON.parse(raw);
+      if(!parsed.classes) parsed.classes = []; // 구버전 데이터 호환
+      return parsed;
+    }catch(e){ /* fall through to reseed */ }
+  }
+  const seeded = seedData();
+  saveDB(seeded);
+  return seeded;
+}
+function saveDB(db){ localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); }
+
+let DB = loadDB();
+function persist(){ saveDB(DB); }
+
+// ------------------------------------------------------------
+// 상태 (지금 보고 있는 화면)
+// ------------------------------------------------------------
+let VIEW = {
+  role: null,          // 'student' | 'teacher'
+  studentId: null,
+  studentTab: 'market', // market | mypage  (closet/아바타는 나중에 추가 예정)
+  teacherTab: 'students', // students | orders | products | ledger
+  teacherSection: 'home', // home | coupon | spb
+  couponTab: 'products',  // products | orders  (쿠폰함 내부 탭)
+  spbSearch: '',
+  spbClassFilter: 'all',
+  spbSortAlpha: false,
+  showClassAddPanel: false,
+  showStudentAddPanel: false,
+  showSpbLedgerModal: false,
+  closetCategory: 'background',
+  boardPage: null, // 마이페이지 스티커판 현재 페이지 (null = 마지막 페이지부터 시작)
+  poppingStickerId: null, // 지금 탭해서 사라지는 애니메이션 중인 대기 스티커
+  justPlacedFlag: false,  // 방금 판에 새로 붙은 스티커 강조 애니메이션
+  showOrdersModal: false, // 내 주문 팝업 표시 여부
+};
+
+const STICKERS_PER_BOARD_PAGE = 64; // 8 x 8
+
+function showToast(msg){
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1800);
+}
+
+// 스티커를 판에 붙일 때 나는 효과음 — "차르르 아르페지오" (외부 파일 없이 즉석 합성)
+function playStickerPlaceSound(){
+  try{
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return;
+    const ctx = new Ctx();
+    const now = ctx.currentTime;
+    [523.25, 659.25, 783.99, 1046.5].forEach((freq, i)=>{
+      const start = now + i*0.07;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, start);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.22, start + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.22);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.24);
+    });
+  }catch(e){ /* 오디오를 지원하지 않는 환경이면 조용히 무시 */ }
+}
+
+// ------------------------------------------------------------
+// 아바타 SVG 레이어
+// ------------------------------------------------------------
+const LAYER_SVG = {
+  bg_sky: `<rect width="200" height="200" fill="#bfe3ff"/><circle cx="150" cy="40" r="18" fill="#fff6c2"/>`,
+  bg_sunset: `<rect width="200" height="200" fill="#ffd8a8"/><circle cx="150" cy="150" r="40" fill="#ffb26b" opacity="0.6"/>`,
+  bg_night: `<rect width="200" height="200" fill="#2b2d55"/><circle cx="40" cy="35" r="10" fill="#ffe9a8"/><circle cx="160" cy="60" r="2" fill="#fff"/><circle cx="120" cy="30" r="2" fill="#fff"/><circle cx="70" cy="80" r="2" fill="#fff"/>`,
+  bg_forest: `<rect width="200" height="200" fill="#cdeccd"/><path d="M20 200 L20 150 L40 120 L60 150 L60 200 Z" fill="#6fae6f"/><path d="M140 200 L140 140 L165 105 L190 140 L190 200 Z" fill="#5c9c5c"/>`,
+
+  body_base: `<ellipse cx="100" cy="185" rx="46" ry="14" fill="rgba(0,0,0,0.08)"/>`,
+
+  shoes_basic: `<rect x="72" y="172" width="22" height="12" rx="4" fill="#e9ecef"/><rect x="106" y="172" width="22" height="12" rx="4" fill="#e9ecef"/>`,
+  shoes_red: `<rect x="72" y="172" width="22" height="12" rx="4" fill="#e5484d"/><rect x="106" y="172" width="22" height="12" rx="4" fill="#e5484d"/>`,
+  shoes_boots: `<rect x="70" y="164" width="24" height="20" rx="4" fill="#7a5230"/><rect x="106" y="164" width="24" height="20" rx="4" fill="#7a5230"/>`,
+  shoes_sandal: `<rect x="72" y="176" width="22" height="8" rx="3" fill="#ffb26b"/><rect x="106" y="176" width="22" height="8" rx="3" fill="#ffb26b"/><line x1="83" y1="176" x2="83" y2="166" stroke="#ffb26b" stroke-width="3"/><line x1="117" y1="176" x2="117" y2="166" stroke="#ffb26b" stroke-width="3"/>`,
+
+  top_basic: `<rect x="62" y="110" width="76" height="66" rx="18" fill="#5b6bf5"/>`,
+  top_hoodie: `<rect x="60" y="106" width="80" height="70" rx="20" fill="#8b5cf6"/><path d="M78 110 Q100 96 122 110" fill="none" stroke="#8b5cf6" stroke-width="10" stroke-linecap="round"/>`,
+  top_dress: `<path d="M70 110 L130 110 L142 176 L58 176 Z" fill="#ff8fb1"/>`,
+  top_stripe: `<rect x="62" y="110" width="76" height="66" rx="18" fill="#ffffff" stroke="#22232b" stroke-width="2"/><rect x="62" y="126" width="76" height="8" fill="#22232b"/><rect x="62" y="146" width="76" height="8" fill="#22232b"/><rect x="62" y="166" width="76" height="8" fill="#22232b"/>`,
+
+  head_base: `<circle cx="100" cy="90" r="42" fill="#ffd9b3"/><circle cx="86" cy="92" r="4" fill="#22232b"/><circle cx="114" cy="92" r="4" fill="#22232b"/><path d="M90 106 Q100 114 110 106" stroke="#22232b" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="78" cy="102" rx="6" ry="4" fill="#ffb4a2" opacity="0.6"/><ellipse cx="122" cy="102" rx="6" ry="4" fill="#ffb4a2" opacity="0.6"/>`,
+
+  hair_short: `<path d="M58 78 Q60 40 100 38 Q140 40 142 78 Q130 58 100 58 Q70 58 58 78 Z" fill="#5b3a29"/>`,
+  hair_long: `<path d="M56 76 Q58 36 100 34 Q142 36 144 76 Q150 120 138 150 Q132 110 128 90 Q120 60 100 60 Q80 60 72 90 Q68 110 62 150 Q50 120 56 76 Z" fill="#3d2b1f"/>`,
+  hair_pony: `<path d="M58 78 Q60 40 100 38 Q140 40 142 78 Q130 58 100 58 Q70 58 58 78 Z" fill="#6b4226"/><path d="M140 70 Q168 78 158 120 Q150 100 138 88 Z" fill="#6b4226"/>`,
+  hair_spiky: `<path d="M60 76 L68 44 L80 68 L92 36 L104 66 L116 38 L128 68 L140 46 L142 78 Q130 58 100 58 Q70 58 60 76 Z" fill="#22232b"/>`,
+
+  hat_none: ``,
+  hat_cap: `<path d="M56 66 Q58 32 100 30 Q142 32 144 66 Q120 54 100 54 Q80 54 56 66 Z" fill="#2f80ed"/><ellipse cx="130" cy="66" rx="26" ry="8" fill="#2361b8"/>`,
+  hat_beanie: `<path d="M56 70 Q58 26 100 24 Q142 26 144 70 Q100 56 56 70 Z" fill="#e5484d"/><rect x="56" y="64" width="88" height="12" rx="6" fill="#c73c40"/><circle cx="100" cy="20" r="7" fill="#fff"/>`,
+  hat_crown: `<path d="M62 62 L70 34 L86 54 L100 28 L114 54 L130 34 L138 62 Z" fill="#ffd43b" stroke="#e0a800" stroke-width="2"/><circle cx="70" cy="34" r="4" fill="#ff6b6b"/><circle cx="100" cy="28" r="4" fill="#4d96ff"/><circle cx="130" cy="34" r="4" fill="#ff6b6b"/>`,
+
+  pet_none: ``,
+  pet_cat: `<g transform="translate(150,150)"><ellipse cx="0" cy="10" rx="18" ry="14" fill="#f4a261"/><circle cx="0" cy="-6" r="13" fill="#f4a261"/><path d="M-10 -14 L-4 -22 L-2 -12 Z" fill="#f4a261"/><path d="M10 -14 L4 -22 L2 -12 Z" fill="#f4a261"/><circle cx="-4" cy="-6" r="1.6" fill="#22232b"/><circle cx="4" cy="-6" r="1.6" fill="#22232b"/></g>`,
+  pet_dog: `<g transform="translate(150,150)"><ellipse cx="0" cy="10" rx="19" ry="14" fill="#c98a4b"/><circle cx="0" cy="-6" r="13" fill="#e0a56f"/><ellipse cx="-11" cy="-4" rx="5" ry="9" fill="#c98a4b"/><ellipse cx="11" cy="-4" rx="5" ry="9" fill="#c98a4b"/><circle cx="-4" cy="-6" r="1.6" fill="#22232b"/><circle cx="4" cy="-6" r="1.6" fill="#22232b"/><ellipse cx="0" cy="0" rx="3" ry="2" fill="#22232b"/></g>`,
+  pet_dragon: `<g transform="translate(150,150)"><ellipse cx="0" cy="10" rx="18" ry="14" fill="#63c26f"/><circle cx="0" cy="-6" r="12" fill="#7bd489"/><path d="M-8 -16 L-4 -24 L0 -16 Z" fill="#3e9b4c"/><path d="M8 -16 L4 -24 L0 -16 Z" fill="#3e9b4c"/><circle cx="-4" cy="-6" r="1.6" fill="#22232b"/><circle cx="4" cy="-6" r="1.6" fill="#22232b"/><path d="M14 8 Q26 8 24 -2" stroke="#3e9b4c" stroke-width="5" fill="none" stroke-linecap="round"/></g>`,
+};
+
+function buildAvatarSVG(equipped){
+  const layers = [
+    LAYER_SVG[equipped.background] || LAYER_SVG.bg_sky,
+    LAYER_SVG.body_base,
+    LAYER_SVG[equipped.pet] || "",
+    LAYER_SVG[equipped.shoes] || "",
+    LAYER_SVG[equipped.top] || "",
+    LAYER_SVG.head_base,
+    LAYER_SVG[equipped.hair] || "",
+    LAYER_SVG[equipped.hat] || "",
+  ].join("");
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">${layers}</svg>`;
+}
+
+function itemPreviewSVG(item){
+  // 옷장 카드용 미리보기: 배경/펫은 그 자체로, 나머지는 기본 아바타에 해당 아이템만 입혀서 보여줌
+  const base = defaultAvatar();
+  if(item.category === 'background') return `<svg viewBox="0 0 200 200">${LAYER_SVG[item.svg]}</svg>`;
+  if(item.category === 'pet') return `<svg viewBox="0 0 200 200">${LAYER_SVG.bg_sky}${LAYER_SVG[item.svg]}</svg>`;
+  base[item.category] = item.svg;
+  return buildAvatarSVG(base);
+}
+
+// ------------------------------------------------------------
+// 헬퍼: 학생/아이템/상품 조회
+// ------------------------------------------------------------
+const CATEGORY_LABEL = {background:"배경",hair:"머리",hat:"모자",top:"상의",shoes:"신발",pet:"펫"};
+const CATEGORIES = ["background","hair","hat","top","shoes","pet"];
+
+// 스티커 종류 — 모양(별)은 하나, 카테고리마다 색만 다름
+const STICKER_TYPES = [
+  {id:"big_box",   label:"빅박스 완료",     color:"#fb7185"},
+  {id:"talk_tree", label:"톡트리 완료",     color:"#06b6d4"},
+  {id:"book_hw",   label:"교재 숙제 완료",   color:"#f5a623"},
+  {id:"quiz",      label:"북퀴즈 완료",      color:"#34c98e"},
+  {id:"review_perfect", label:"리뷰테스트 만점", color:"#4d96ff"},
+  {id:"participation",  label:"수업 참여도",     color:"#a78bfa"},
+];
+const GENERIC_STICKER_COLOR = "#f5c518";
+function stickerColor(categoryId){
+  if(!categoryId) return GENERIC_STICKER_COLOR;
+  const t = STICKER_TYPES.find(t=>t.id===categoryId);
+  return t ? t.color : GENERIC_STICKER_COLOR;
+}
+
+function lightenColor(hex, amt){
+  amt = amt===undefined ? 0.4 : amt;
+  const c = hex.replace('#','');
+  const r = parseInt(c.substr(0,2),16), g = parseInt(c.substr(2,2),16), b = parseInt(c.substr(4,2),16);
+  const nr = Math.round(r + (255-r)*amt), ng = Math.round(g + (255-g)*amt), nb = Math.round(b + (255-b)*amt);
+  return `rgb(${nr},${ng},${nb})`;
+}
+
+// 카테고리마다 다른 아이콘 그림 (0,0 중심 기준 좌표, 흰색으로 그려서 배지 배경 위에 얹음)
+function categoryIconGlyph(categoryId){
+  switch(categoryId){
+    case "big_box": // 3D 상자
+      return `<path d="M0 -8 L8 -4.4 L8 4.4 L0 8 L-8 4.4 L-8 -4.4 Z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M-8 -4.4 L0 -1 L8 -4.4" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>
+        <line x1="0" y1="-1" x2="0" y2="8" stroke="#fff" stroke-width="1.8"/>`;
+    case "talk_tree": // 나무 + 말풍선(톡)
+      return `<circle cx="-1" cy="-3.4" r="6.2" fill="#fff"/>
+        <rect x="-2.2" y="2.4" width="2.6" height="6" rx="1" fill="#fff"/>
+        <path d="M3.5 -9.5 C3.5 -11.6 8.3 -11.6 8.3 -9.5 C8.3 -8 6.8 -7.4 6.8 -7.4 L7.2 -6 L5.3 -7.4 C4 -7.6 3.5 -8.3 3.5 -9.5 Z" fill="#fff"/>`;
+    case "book_hw": // 펼친 책
+      return `<path d="M0 -6 C-2 -7.5 -8 -7 -8 -5 L-8 5 C-8 3.5 -2 4.5 0 6 Z" fill="#fff"/>
+        <path d="M0 -6 C2 -7.5 8 -7 8 -5 L8 5 C8 3.5 2 4.5 0 6 Z" fill="#fff"/>
+        <line x1="0" y1="-6" x2="0" y2="6" stroke="rgba(0,0,0,0.18)" stroke-width="1.2"/>`;
+    case "quiz": // 물음표
+      return `<path d="M-3 -5 C-3 -8 3 -8 3 -5 C3 -3 0 -2.5 0 0.3" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round"/>
+        <circle cx="0" cy="5" r="1.5" fill="#fff"/>`;
+    case "review_perfect": // 트로피
+      return `<path d="M-6 -8 L6 -8 L5 -2 C4.5 1.5 2.5 3.5 0 3.5 C-2.5 3.5 -4.5 1.5 -5 -2 Z" fill="#fff"/>
+        <path d="M-6 -7.5 C-9.6 -7.5 -9.6 -2 -5.6 -1.6" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M6 -7.5 C9.6 -7.5 9.6 -2 5.6 -1.6" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+        <rect x="-0.9" y="3.5" width="1.8" height="3" fill="#fff"/>
+        <rect x="-4" y="7" width="8" height="1.8" rx="0.9" fill="#fff"/>`;
+    case "participation": // 번쩍 든 손
+      return `<rect x="-4" y="0.5" width="8" height="7" rx="3" fill="#fff"/>
+        <rect x="-3.6" y="-7.5" width="1.8" height="9" rx="0.9" fill="#fff"/>
+        <rect x="-1.2" y="-9" width="1.8" height="10.2" rx="0.9" fill="#fff"/>
+        <rect x="1.2" y="-8.6" width="1.8" height="9.8" rx="0.9" fill="#fff"/>
+        <rect x="3.4" y="-6.6" width="1.8" height="7.8" rx="0.9" fill="#fff"/>
+        <rect x="-7.2" y="1.6" width="1.8" height="5" rx="0.9" fill="#fff" transform="rotate(-32 -6.3 4.1)"/>`;
+    default: // 카테고리 없는 일반 스티커 — 별
+      return `<path d="M0 -9 L2.6 -2.8 L9 -2.6 L3.8 1.6 L5.6 8 L0 4.4 L-5.6 8 L-3.8 1.6 L-9 -2.6 L-2.6 -2.8 Z" fill="#fff"/>`;
+  }
+}
+
+let _badgeSeq = 0;
+function stickerBadge(categoryId, size){
+  size = size || 34;
+  const color = stickerColor(categoryId);
+  const gid = "sbg" + (_badgeSeq++);
+  return `<svg class="sticker-badge" width="${size}" height="${size}" viewBox="0 0 40 40" style="flex-shrink:0;">
+    <defs>
+      <radialGradient id="${gid}" cx="35%" cy="30%" r="80%">
+        <stop offset="0%" stop-color="${lightenColor(color,0.45)}"/>
+        <stop offset="100%" stop-color="${color}"/>
+      </radialGradient>
+    </defs>
+    <circle cx="20" cy="20" r="18" fill="url(#${gid})" stroke="#fff" stroke-width="3"/>
+    <g transform="translate(20,20) scale(1.45)">${categoryIconGlyph(categoryId)}</g>
+  </svg>`;
+}
+
+function getStudent(id){ return DB.students.find(s=>s.id===id); }
+function itemsByCategory(cat){ return DB.items.filter(i=>i.category===cat); }
+function getItem(id){ return DB.items.find(i=>i.id===id); }
+function getProduct(id){ return DB.products.find(p=>p.id===id); }
+
+function addLedger(studentId, delta, reason){
+  DB.ledger.unshift({id:uid("lg"), studentId, delta, reason, ts:now()});
+}
+
+// ------------------------------------------------------------
+// 액션들
+// ------------------------------------------------------------
+function buyAvatarItem(studentId, itemId){
+  const st = getStudent(studentId), item = getItem(itemId);
+  if(!st || !item) return;
+  if(st.inventory.includes(itemId)){ showToast("이미 가지고 있어요"); return; }
+  if(st.stickers < item.price){ showToast("스티커가 부족해요"); return; }
+  st.stickers -= item.price;
+  st.inventory.push(itemId);
+  st.avatar[item.category] = itemId;
+  addLedger(studentId, -item.price, `아이템 구매: ${item.name}`);
+  persist();
+  showToast(`${item.name} 구매 완료!`);
+  render();
+}
+
+function equipItem(studentId, itemId){
+  const st = getStudent(studentId), item = getItem(itemId);
+  if(!st || !item) return;
+  if(!st.inventory.includes(itemId)) return;
+  st.avatar[item.category] = itemId;
+  persist();
+  render();
+}
+
+function buyProduct(studentId, productId){
+  const st = getStudent(studentId), pd = getProduct(productId);
+  if(!st || !pd) return;
+  if(pd.stock <= 0){ showToast("품절된 상품이에요"); return; }
+  if(st.stickers < pd.price){ showToast("스티커가 부족해요"); return; }
+  st.stickers -= pd.price;
+  pd.stock -= 1;
+  DB.orders.unshift({id:uid("od"), studentId, productId, price:pd.price, status:"pending", ts:now()});
+  addLedger(studentId, -pd.price, `물품 구매 예약: ${pd.name}`);
+  persist();
+  showToast(`${pd.name} 예약 완료! 마켓데이에 선생님께 받아가세요`);
+  render();
+}
+
+function markOrderCollected(orderId){
+  const od = DB.orders.find(o=>o.id===orderId);
+  if(!od || od.status !== 'pending') return;
+  od.status = 'collected';
+  persist();
+  render();
+}
+
+function cancelOrder(orderId){
+  const od = DB.orders.find(o=>o.id===orderId);
+  if(!od || od.status !== 'pending') return;
+  const st = getStudent(od.studentId), pd = getProduct(od.productId);
+  if(st) st.stickers += od.price;
+  if(pd) pd.stock += 1;
+  od.status = 'cancelled';
+  if(st) addLedger(st.id, od.price, `주문 취소 환불: ${pd?pd.name:''}`);
+  persist();
+  render();
+}
+
+function getPendingStickers(student){ return (student.stickerLog||[]).filter(s=>!s.placed); }
+function getPlacedStickers(student){ return (student.stickerLog||[]).filter(s=>s.placed); }
+function getCategoryReceivedCount(student, catId){ return (student.stickerLog||[]).filter(s=>s.categoryId===catId).length; }
+
+function placeSticker(studentId, stickerId){
+  const st = getStudent(studentId);
+  if(!st) return;
+  const entry = (st.stickerLog||[]).find(s=>s.id===stickerId && !s.placed);
+  if(!entry) return;
+  entry.placed = true;
+  entry.ts = now();
+  st.totalEarned = (st.totalEarned||0) + 1;
+  st.semesterEarned = (st.semesterEarned||0) + 1;
+  st.stickers += 1;
+  const cat = STICKER_TYPES.find(c=>c.id===entry.categoryId);
+  addLedger(studentId, 1, `스티커북에 붙임: ${cat?cat.label:'스티커'}`);
+  persist();
+}
+
+// ------------------------------------------------------------
+// 렌더링
+// ------------------------------------------------------------
+const app = document.getElementById('app');
+
+function render(){
+  if(VIEW.role === null){ app.innerHTML = renderRoleSelect(); bindRoleSelect(); return; }
+  if(VIEW.role === 'student'){ app.innerHTML = renderStudentShell(); bindStudentShell(); return; }
+}
+
+// ---------- 역할 선택 ----------
+function renderRoleSelect(){
+  return `
+  <main class="role-screen">
+    <h1>📖 My Point Book</h1>
+    <p>스티커를 모아 마켓데이 물품을 구매해요</p>
+    <div class="card" style="text-align:left">
+      <h3>학생으로 시작하기</h3>
+      <div class="student-pick" id="studentPick">
+        ${DB.students.map(s=>`<div class="student-chip" data-id="${s.id}">🙂 ${s.name} <span style="color:var(--brand-dark)">🍬${s.stickers}</span></div>`).join("") || '<div class="empty">등록된 학생이 없어요</div>'}
+      </div>
+    </div>
+  </main>`;
+}
+function bindRoleSelect(){
+  document.querySelectorAll('#studentPick .student-chip').forEach(el=>{
+    el.onclick = ()=>{ VIEW.role='student'; VIEW.studentId = el.dataset.id; VIEW.studentTab='market'; VIEW.boardPage=null; render(); };
+  });
+}
+
+function headerBar(rightHtml){
+  return `<header>
+    <div class="logo">📖 My <span>Point Book</span></div>
+    <div class="spacer"></div>
+    ${rightHtml}
+    <button class="btn ghost" id="logoutBtn">← 나가기</button>
+  </header>`;
+}
+function bindLogout(){
+  document.getElementById('logoutBtn').onclick = ()=>{ VIEW.role=null; VIEW.studentId=null; render(); };
+}
+
+// ---------- 학생 화면 ----------
+function renderStudentShell(){
+  const st = getStudent(VIEW.studentId);
+  if(!st){ VIEW.role=null; return renderRoleSelect(); }
+  return `
+  ${headerBar(`<div class="pill">🙂 ${st.name}</div><div class="pill">🍬 ${st.stickers}</div>`)}
+  <main>
+    <div class="tabs">
+      <div class="tab ${VIEW.studentTab==='mypage'?'active':''}" data-tab="mypage">📄 마이페이지</div>
+      <div class="tab ${VIEW.studentTab==='market'?'active':''}" data-tab="market">🛒 마켓데이</div>
+    </div>
+    ${renderMyPage(st)}
+  </main>`;
+}
+function bindStudentShell(){
+  bindLogout();
+  document.querySelectorAll('.tab').forEach(el=>{
+    el.onclick = ()=>{ VIEW.studentTab = el.dataset.tab; render(); };
+  });
+  bindMyPage();
+}
+
+function renderCloset(st){
+  const cat = VIEW.closetCategory;
+  const list = itemsByCategory(cat);
+  return `
+  <div class="card">
+    <div class="avatar-wrap">
+      <div class="avatar-frame">${buildAvatarSVG(st.avatar)}</div>
+      <div style="flex:1;min-width:200px;">
+        <h2>내 아바타</h2>
+        <p style="color:var(--sub);font-size:13px;">스티커로 아이템을 사서 자유롭게 꾸며보세요. 산 아이템은 마이페이지에서 다시 갈아입을 수 있어요.</p>
+        <div class="pill">🍬 보유 스티커 ${st.stickers}개</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="cat-row" id="closetCats">
+      ${CATEGORIES.map(c=>`<div class="cat-btn ${cat===c?'active':''}" data-cat="${c}">${CATEGORY_LABEL[c]}</div>`).join('')}
+    </div>
+    <div class="grid cols-4" id="closetItems">
+      ${list.map(item=>{
+        const owned = st.inventory.includes(item.id);
+        const equipped = st.avatar[item.category] === item.id;
+        return `
+        <div class="item-card ${owned?'owned':''} ${equipped?'equipped':''}">
+          ${equipped?'<div class="badge">착용중</div>':''}
+          ${itemPreviewSVG(item)}
+          <div class="name">${item.name}</div>
+          <div class="price">${item.price===0 ? '기본 제공' : '🍬 '+item.price}</div>
+          ${equipped ? `<button class="btn secondary" disabled>착용중</button>`
+            : owned ? `<button class="btn secondary" data-equip="${item.id}">착용하기</button>`
+            : `<button class="btn" data-buy="${item.id}" ${st.stickers<item.price?'disabled':''}>구매</button>`}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+function bindCloset(){
+  document.querySelectorAll('#closetCats .cat-btn').forEach(el=>{
+    el.onclick = ()=>{ VIEW.closetCategory = el.dataset.cat; render(); };
+  });
+  document.querySelectorAll('[data-buy]').forEach(el=>{
+    el.onclick = ()=> buyAvatarItem(VIEW.studentId, el.dataset.buy);
+  });
+  document.querySelectorAll('[data-equip]').forEach(el=>{
+    el.onclick = ()=> equipItem(VIEW.studentId, el.dataset.equip);
+  });
+}
+
+function renderMarketCenter(st){
+  return `
+    <div class="flex-between">
+      <h2>🛒 마켓데이</h2>
+      <div class="pill">🍬 ${st.stickers}</div>
+    </div>
+    <div class="market-list-header">
+      <span>물품</span><span>물품명</span><span>포인트 차감량</span><span></span>
+    </div>
+    <div class="market-product-list">
+      ${DB.products.map(p=>`
+        <div class="market-product-row">
+          <div class="mp-product-icon">${p.icon}</div>
+          <div>
+            <div class="mp-product-name">${p.name}</div>
+            <div class="mp-product-stock">${p.stock>0 ? '재고 '+p.stock+'개' : '품절'}</div>
+          </div>
+          <div class="mp-product-price">🍬 -${p.price}</div>
+          <button class="btn" data-buyproduct="${p.id}" ${p.stock<=0 || st.stickers<p.price ? 'disabled':''}>
+            ${p.stock<=0 ? '품절' : '구매'}
+          </button>
+        </div>`).join('') || '<div class="empty">등록된 물품이 없어요</div>'}
+    </div>
+  `;
+}
+function bindMarketCenter(){
+  document.querySelectorAll('[data-buyproduct]').forEach(el=>{
+    el.onclick = ()=> buyProduct(VIEW.studentId, el.dataset.buyproduct);
+  });
+}
+
+function renderMyPage(st){
+  const myOrders = DB.orders.filter(o=>o.studentId===st.id);
+  const statusLabel = {pending:"수령 대기", collected:"수령 완료", cancelled:"취소됨"};
+
+  const totalEarned = st.totalEarned || 0;
+  const semesterEarned = st.semesterEarned || 0;
+  const level = Math.max(1, Math.floor(totalEarned / 20) + 1);
+  const pending = getPendingStickers(st);
+  const placed = getPlacedStickers(st);
+
+  const totalPages = Math.max(1, Math.ceil(totalEarned / STICKERS_PER_BOARD_PAGE));
+  if(VIEW.boardPage === null || VIEW.boardPage === undefined) VIEW.boardPage = totalPages - 1;
+  VIEW.boardPage = Math.min(Math.max(0, VIEW.boardPage), totalPages - 1);
+  const pageStart = VIEW.boardPage * STICKERS_PER_BOARD_PAGE;
+
+  let boardCells = '';
+  for(let i=0; i<STICKERS_PER_BOARD_PAGE; i++){
+    const idx = pageStart + i;
+    const entry = placed[idx];
+    const isLast = VIEW.justPlacedFlag && idx === placed.length - 1;
+    if(entry){
+      boardCells += `<div class="sticker-slot filled ${isLast?'slot-pop-in':''}">${stickerBadge(entry.categoryId, 26)}</div>`;
+    } else {
+      boardCells += `<div class="sticker-slot"></div>`;
+    }
+  }
+
+  const pendingHtml = pending.length ? pending.map(p=>{
+    const color = stickerColor(p.categoryId);
+    const cat = STICKER_TYPES.find(c=>c.id===p.categoryId);
+    const popping = VIEW.poppingStickerId === p.id;
+    return `<div class="pending-chip ${popping?'popping':''}" data-pending="${p.id}" title="${cat?cat.label:'스티커'} — 눌러서 붙이기">
+      ${stickerBadge(p.categoryId, 36)}
+      <span class="spark b1">✨</span><span class="spark b2">✨</span>
+      <span class="spark b3">✨</span><span class="spark b4">✨</span>
+      <span class="spark b5">✨</span><span class="spark b6">✨</span>
+    </div>`;
+  }).join('') : '';
+
+  const catRows = STICKER_TYPES.map(cat=>{
+    const count = getCategoryReceivedCount(st, cat.id);
+    return `<div class="cat-row-mini">
+      ${stickerBadge(cat.id, 28)}
+      <div class="cat-row-mini-label">${cat.label}</div>
+      <div class="cat-row-mini-count">${count}개</div>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="mypage-grid">
+    <div class="mp-col mp-left">
+      <div class="mp-avatar-box">
+        <div class="mp-avatar-placeholder">🙂</div>
+        <div class="mp-name">${st.name}</div>
+        <div class="mp-level">레벨 ${level}</div>
+      </div>
+      <div class="mp-feature-list">
+        <div class="mp-feature-item" id="openOrdersModalBtn">📦 <span>내 주문 확인</span></div>
+        <div class="mp-feature-item disabled">🛒 <span>마켓데이</span></div>
+        <div class="mp-feature-item disabled">🧩 <span>기능 준비중</span></div>
+        <div class="mp-feature-item disabled">🧩 <span>기능 준비중</span></div>
+      </div>
+    </div>
+
+    <div class="mp-col mp-center">
+      <div class="card">
+        ${VIEW.studentTab === 'market' ? renderMarketCenter(st) : `
+        <div class="flex-between">
+          <h2>My Point Book</h2>
+          <div class="pill">🍬 ${st.stickers}</div>
+        </div>
+
+        ${pending.length ? `
+        <div class="pending-tray-wrap">
+          <div class="pending-tray-label">✨ 새로 받은 스티커를 직접 스티커북에 붙여보세요</div>
+          <div class="pending-tray">${pendingHtml}</div>
+        </div>` : ''}
+
+        <div class="sticker-board">
+          ${boardCells}
+        </div>
+        <div class="board-nav">
+          <button class="btn secondary" id="boardPrev" ${VIEW.boardPage<=0?'disabled':''}>◀</button>
+          <span style="font-size:13px;color:var(--sub);font-weight:700;">${VIEW.boardPage+1} / ${totalPages} 페이지</span>
+          <button class="btn secondary" id="boardNext" ${VIEW.boardPage>=totalPages-1?'disabled':''}>▶</button>
+        </div>
+        `}
+      </div>
+    </div>
+
+    <div class="mp-col mp-right">
+      <div class="mp-stat-box"><h3>현재 보유 스티커</h3><div class="mp-stat-num">🍬 ${st.stickers}</div></div>
+      <div class="mp-stat-box">
+        <h3>숙제별 누적 스티커량</h3>
+        <div class="cat-row-list">${catRows}</div>
+      </div>
+      <div class="mp-stat-box"><h3>이번 학기 스티커량</h3><div class="mp-stat-num">🍬 ${semesterEarned}</div></div>
+      <div class="mp-stat-box"><h3>총 누적 스티커량</h3><div class="mp-stat-num">🍬 ${totalEarned}</div></div>
+      <div class="mp-stat-box"><h3>사용된 스티커량</h3><div class="mp-stat-num">🍬 ${Math.max(0, totalEarned - st.stickers)}</div></div>
+    </div>
+  </div>
+
+  ${VIEW.showOrdersModal ? `
+  <div class="modal-bg" id="ordersModalBackdrop">
+    <div class="modal" style="max-width:560px;">
+      <div class="flex-between">
+        <h3>내 주문 확인</h3>
+        <button class="btn ghost" id="closeOrdersModal">닫기</button>
+      </div>
+      ${myOrders.length ? `<table><thead><tr><th>물품</th><th>가격</th><th>상태</th><th>일시</th></tr></thead><tbody>
+        ${myOrders.map(o=>{
+          const pd = getProduct(o.productId);
+          return `<tr><td>${pd?pd.name:'(삭제된 상품)'}</td><td>🍬${o.price}</td>
+            <td><span class="status-tag status-${o.status}">${statusLabel[o.status]}</span></td>
+            <td>${new Date(o.ts).toLocaleString('ko-KR')}</td></tr>`;
+        }).join('')}
+      </tbody></table>` : '<div class="empty">아직 주문한 물품이 없어요</div>'}
+    </div>
+  </div>` : ''}
+  `;
+}
+function bindMyPage(){
+  const prevBtn = document.getElementById('boardPrev');
+  const nextBtn = document.getElementById('boardNext');
+  if(prevBtn) prevBtn.onclick = ()=>{ VIEW.boardPage = Math.max(0, VIEW.boardPage - 1); render(); };
+  if(nextBtn) nextBtn.onclick = ()=>{ VIEW.boardPage = VIEW.boardPage + 1; render(); };
+
+  document.querySelectorAll('[data-pending]').forEach(el=>{
+    el.onclick = ()=>{
+      if(el.classList.contains('popping')) return;
+      const stickerId = el.dataset.pending;
+      VIEW.poppingStickerId = stickerId;
+      playStickerPlaceSound();
+      render();
+      setTimeout(()=>{
+        placeSticker(VIEW.studentId, stickerId);
+        VIEW.poppingStickerId = null;
+        VIEW.justPlacedFlag = true;
+        showToast('✨ 스티커북에 붙였어요! (+1)');
+        render();
+        setTimeout(()=>{ VIEW.justPlacedFlag = false; render(); }, 700);
+      }, 800);
+    };
+  });
+
+  const openOrders = document.getElementById('openOrdersModalBtn');
+  if(openOrders) openOrders.onclick = ()=>{ VIEW.showOrdersModal = true; render(); };
+  const closeOrders = document.getElementById('closeOrdersModal');
+  if(closeOrders) closeOrders.onclick = ()=>{ VIEW.showOrdersModal = false; render(); };
+  const backdrop = document.getElementById('ordersModalBackdrop');
+  if(backdrop) backdrop.onclick = (e)=>{ if(e.target===backdrop){ VIEW.showOrdersModal=false; render(); } };
+
+  bindMarketCenter();
+}
+
+render();
+</script>
+</body>
+</html>
